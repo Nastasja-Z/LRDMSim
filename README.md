@@ -1,93 +1,77 @@
-# MA-Anastasiia-Zimnenko
+# Latency-aware RDMSim
+A Latency-aware Version of a Remote Data Mirroring Simulator
 
+This simulator is inspired by the [RDM simulator](https://www.hpi.uni-potsdam.de/giese/public/selfadapt/exemplars/rdmsim/) developed by Huma Samin et al. 
 
+The framework simulates a network of mirrors and links between them, which aim to distribute the same data among all mirrors.
+It allows to observe the current overall bandwidth used. The main difference to the original simulator is that in this simulator the network is represented by actual objects.
+This allows to investigate the timing behavior of the network.
 
-## Getting started
+## Installation / Setup
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+The simulator requires a Java Runtime Environment 17+ ([get it here](https://jdk.java.net/java-se-ri/17)).
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+To run the example simulation from the paper, download the release (jar) and execute it:
 
-## Add your files
+``java -jar lrdm.jar``
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+To write your own optimizer setup a new Java project in your favorite IDE and add the release jar to your classpath.
 
+A simple example looks as follows:
+
+```java
+import org.lrdm.TimedRDMSim;
+
+class Example {
+    public static void main(String[] args) {
+        TimedRDMSim sim = new TimedRDMSim("sim.conf");
+        sim.initialize(new BalancedTreeTopologyStrategy());
+        Effector effector = sim.getEffector();
+        effector.setMirrors(20,10); //change number of mirrors to 20 at timestep 10
+        
+        for(int t = 0; t < sim.getSimTime(); t++) {
+            sim.runStep(t);
+            //let the probes print 
+            for(Probe p : sim.getProbes()) {
+                p.print(t);
+            }
+        }
+    }
+}
 ```
-cd existing_repo
-git remote add origin https://git-st.inf.tu-dresden.de/stgroup/student-projects/2024/ma-anastasiia-zimnenko.git
-git branch -M main
-git push -uf origin main
+
+In addition, you need to provide a configuration file (sim.conf) with the following parameters:
+
+```properties
+debug=true              
+sim_time=500                  //how many timesteps shall be simulated
+num_mirrors=50                //number of mirrors
+num_links_per_mirror=2        //number of links per mirror
+startup_time_min=5            //minimum startup time of mirrors
+startup_time_max=10           //maximum startup time of mirrors
+ready_time_min=2              //minimum ready time of mirrors
+ready_time_max=20             //maximum ready time of mirrors
+stop_time_min=2               //minimum stop time of mirrors
+stop_time_max=5               //maximum stop time of mirrors
+link_activation_time_min=5    //minimum activation time of links
+link_activation_time_max=10   //maximum activation time of links 
+fileSize=80                   //size of the data package
+min_bandwidth=2               //minimum bandwidth per link 
+max_bandwidth=8               //maximum bandwidth per link
+fault_probability=0.005       //probability of mirror crashes at each timestep in percent
 ```
 
-## Integrate with your tools
+If you do not provide this file, predefined values will be used and the file will be created for you. Once created, this file will be used instead of the predefined version. Thus, you can start the example from the paper on most systems by simply executing the jar. 
 
-- [ ] [Set up project integrations](https://git-st.inf.tu-dresden.de/stgroup/student-projects/2024/ma-anastasiia-zimnenko/-/settings/integrations)
+Further exemplary configuration files used, e.g., for testing, can be found within the release in the ``resources`` folder.
 
-## Collaborate with your team
+To get an overview of the framework, have a look at the Javadoc (to be found in folder doc/javadoc).
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+## Developer Setup
 
-## Test and Deploy
+To extend the simulator framework, just clone the repository and import it in your IDE as a Maven project.
 
-Use the built-in continuous integration in GitLab.
+You can build the framework using ``mvn package``, which will run all tests, too. This will take quite a while. If you do this on a machine without screen, you need to skip the tests: ``mvn package -DskipTests=true``. This is, because the visualization code is tested, too. 
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project is preconfigured to work with [SonarQube](https://www.sonarsource.com/products/sonarqube/) and JaCoCo. If you want to get an overview with a local SonarQube use:
+``mvn clean verify jacoco:report sonar:sonar -Dsonar.projectKey=<<YourName>> -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<<YourToken>> -f pom.xml``

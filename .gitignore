@@ -1,0 +1,10 @@
+/bin/
+/.classpath
+/target/
+/.idea
+/.vscode
+/.settings
+/target
+/.project
+*.eps
+/sim.conf
