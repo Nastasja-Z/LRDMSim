@@ -51,9 +51,9 @@ public class LoopIteration {
         switch (currentSituationCode) {
             case 1:
                 //35 60(short) 35
-                // pickSituation(sim, iteration);
+                 pickSituation(sim, iteration);
 
-                pickSituationNoLatency(sim, iteration);
+//                pickSituationNoLatency(sim, iteration);
 
                 //   add/remove some mirrors pick situation
                 // someMirrorsPickSituation(sim, iteration);
@@ -68,13 +68,13 @@ public class LoopIteration {
                 break;
             case 3:
                 //20 40 60  & add/remove some mirrors
-//                highHighHighSituation(sim, iteration);
-                highHighHighSituationNoLatency(sim, iteration);
+                highHighHighSituation(sim, iteration);
+//                highHighHighSituationNoLatency(sim, iteration);
                 break;
             case 4:
                 //20 40 50 70 80 100 & add/remove some mirrors
-//                continuouslyHighSituation(sim, iteration);
-                continuouslyHighSituationNoLatency(sim, iteration);
+                continuouslyHighSituation(sim, iteration);
+//                continuouslyHighSituationNoLatency(sim, iteration);
                 break;
             case 5:
                 //60 40 20

@@ -1,5 +1,7 @@
 package org.lrdm.topologies;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.lrdm.Link;
 import org.lrdm.Mirror;
 import org.lrdm.Network;
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
  * @author Sebastian Götz <sebastian.goetz1@tu-dresden.de>
  */
 public class NConnectedTopology extends TopologyStrategy {
+    private static final Log log = LogFactory.getLog(NConnectedTopology.class);
+
     /**
      * Returns the next mirror from the network except for the mirror passed as self.
      * In addition, already connected mirrors are excluded.
@@ -67,6 +71,7 @@ public class NConnectedTopology extends TopologyStrategy {
     }
 
     private void connectToOtherMirrors(Network n, Properties props, Mirror start, Set<Link> ret) {
+        log.info("CONNECTING TO OTHER MIRRORS");
         for (int i = 0; i < n.getNumTargetLinksPerMirror(); i++) {
             Mirror targetMirror = getTargetMirror(start, n);
             if (targetMirror == null) continue;

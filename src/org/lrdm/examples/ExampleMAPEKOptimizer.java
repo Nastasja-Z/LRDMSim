@@ -11,35 +11,25 @@ import java.util.List;
 
 
 public class ExampleMAPEKOptimizer {
-    private static final Integer CURRENT_SITUATION_CODE = 4;
-
-    // TODO for the next week (19.06 meeting)
-    //  0. DOCUMENT ALL THE TESTING
-    //  1.!  box plot (mean squared error. 20 times run)
-    //  1.1  latenz bewusst
-    //  1.2  latenz unbewusst
-    //  2. why delta function does not work
-    //  3.! no more links per mirrors than lpm (error by 60 40 20)
-    //  4.
-    //  5.! work with template
-    //  6.  ? how long should we wait till achieving the goal AL. durchschnitt -->
-    //  6.1. wie die tatsaechliche latenz ist --> kann eine extra metrik sein
-    //  6.2. nachher berechnen --> wie gut die optimierung ist
-    //          (fuer vergleichen latenzbewusst/unbewusst)
-    //  7.! +- no latency for all situation
-    //  8.~ play with start time (and +-some mirrors): two different exercises
-    //  * am ende kann man verschiedene versionen von optimierer machen
-
+    private static Integer CURRENT_SITUATION_CODE = 1;
 
     public static void main(String[] args) {
-        List<Double> meanSquaredErrorList= new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-           meanSquaredErrorList.add(automaticRun());
-        }
-        System.out.println("\n MEAN SQUARED ERROR LIST:");
-        meanSquaredErrorList.forEach(System.out::println);
+        List<Double> meanSquaredErrorList = new ArrayList<>();
+        Map<Integer, List<Double>> meanSquaredErrorMap = new HashMap<>();
+        for (int i = 0; i < 7; i++) {
+            for (int j = 0; j < 3; j++) {
+                meanSquaredErrorList.add(automaticRun());
+            }
+            meanSquaredErrorMap.put(CURRENT_SITUATION_CODE, meanSquaredErrorList);
+            CURRENT_SITUATION_CODE++;
 
-        EventQueue.invokeLater(() -> MeanSquaredErrorBoxPlot.display(meanSquaredErrorList));
+            System.out.println("\n MEAN SQUARED ERROR LIST:");
+            meanSquaredErrorList.forEach(System.out::println);
+
+            meanSquaredErrorList = new ArrayList<>();
+        }
+
+        EventQueue.invokeLater(() -> MeanSquaredErrorBoxPlot.display(meanSquaredErrorMap));
     }
 
     private static double automaticRun() {

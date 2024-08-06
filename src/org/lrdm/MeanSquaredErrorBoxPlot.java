@@ -8,27 +8,27 @@ import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 public class MeanSquaredErrorBoxPlot {
     private static final String ROW_KEY = "Mean Squared Error";
 
-    public static void display(List<Double> listOfMeanSquaredErrors){
+    public static void display(Map<Integer, List<Double>> meanSquaredErrorMap) {
         JFrame f = new JFrame("BoxPlot");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         DefaultBoxAndWhiskerCategoryDataset dataset = new DefaultBoxAndWhiskerCategoryDataset();
-        dataset.add(listOfMeanSquaredErrors, ROW_KEY, "Test");
-        dataset.add(listOfMeanSquaredErrors, ROW_KEY, "Test2");
-        dataset.add(listOfMeanSquaredErrors, ROW_KEY, "Test3");
-        dataset.add(listOfMeanSquaredErrors, ROW_KEY, "Test4");
-        dataset.add(listOfMeanSquaredErrors, ROW_KEY, "Test5");
-        dataset.add(listOfMeanSquaredErrors, ROW_KEY, "Test6");
+        for (Map.Entry<Integer, List<Double>> entry : meanSquaredErrorMap.entrySet()) {
+            Integer key = entry.getKey();
+            List<Double> value = entry.getValue();
+            dataset.add(value, ROW_KEY, key.toString());
+        }
 
         JFreeChart chart = ChartFactory.createBoxAndWhiskerChart("Box and Whisker Chart", ROW_KEY, "MSE", dataset, false);
-        f.add(new ChartPanel(chart){
+        f.add(new ChartPanel(chart) {
             @Override
-           public Dimension getPreferredSize(){
-               return new Dimension(320, 480);
-           }
+            public Dimension getPreferredSize() {
+                return new Dimension(320, 480);
+            }
         });
         f.pack();
         f.setLocationRelativeTo(null);
@@ -36,24 +36,3 @@ public class MeanSquaredErrorBoxPlot {
     }
 }
 
-
-
-
-
-
-//extends ApplicationFrame {
-//    public MeanSquaredErrorBoxPlot(String title, List<Integer> listOfMeanSquaredErrors) {
-//        super(title);
-//
-//        final BoxAndWhiskerXYDataset dataset =createDataset(listOfMeanSquaredErrors);
-//    }
-//
-//    private BoxAndWhiskerXYDataset createDataset(List<Integer> listOfMeanSquaredErrors){
-////        final int ENTITY_COUNT = 20;
-//
-//        DefaultBoxAndWhiskerXYDataset dataset = new DefaultBoxAndWhiskerXYDataset("Mean squared error Boxplot");
-//
-//        dataset.a;
-//
-//    }
-//}
