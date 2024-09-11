@@ -33,6 +33,8 @@ public class Network {
 
     private final Logger log;
 
+    private List<Mirror> stoppedMirrors = new ArrayList<>();
+
     /**
      * The history of used bandwidth. A map with simulation time as key and the used bandwidth as value.
      */
@@ -72,6 +74,7 @@ public class Network {
         mirrors.get(0).setRoot(true);
         // create the links - default strategy: spanning tree
         links = strategy.initNetwork(this, props);
+        NConnectedTopology.newConnectToMirrors(this, props, links);
         log = Logger.getLogger(this.getClass().getName());
         //put a new data package on the first mirror
         DataPackage initialData = new DataPackage(fileSize);
@@ -154,7 +157,11 @@ public class Network {
                 strategy.handleAddNewMirrors(this, newMirrors - mirrors.size(), props, simTime);
             }
         } else if (newMirrors < mirrors.size()) { // send shutdown signal to mirrors being too much
-            strategy.handleRemoveMirrors(this, mirrors.size() - newMirrors, props, simTime);
+            if (this.strategy instanceof NConnectedTopology) {
+                strategy.modifyNetworkAfterRemoveMirror(this, mirrors.size() - newMirrors, props, simTime);
+            } else {
+                strategy.handleRemoveMirrors(this, mirrors.size() - newMirrors, props, simTime);
+            }
         }
         numTargetMirrors = newMirrors;
     }
@@ -172,6 +179,10 @@ public class Network {
         else {
             this.strategy = strategy;
             this.strategy.restartNetwork(this, props, timeStep);
+            if (strategy instanceof NConnectedTopology) {
+//                this.strategy.initNetwork(this, props);
+                NConnectedTopology.newConnectToMirrors(this, props, links);
+            }
         }
     }
 
@@ -184,15 +195,33 @@ public class Network {
      */
     public void setNumTargetedLinksPerMirror(int numTargetLinksPerMirror, int timeStep) {
         log.log(Level.INFO, "setNumTargetedLinksPerMirror({0},{1})", new Object[]{numTargetLinksPerMirror, timeStep});
-        this.numTargetLinksPerMirror = numTargetLinksPerMirror;
-        if (timeStep > 0) {
-            //TODO: here change to modifyNetwork()
+
+        if (numTargetLinksPerMirror > this.numTargetLinksPerMirror) {
+            this.numTargetLinksPerMirror = numTargetLinksPerMirror;
+            if (this.strategy instanceof NConnectedTopology) {
+                strategy.modifyNetworkAfterAddLink(this, props, timeStep);
+            } else {
+                strategy.restartNetwork(this, props, timeStep);
+            }
+        } else if (numTargetLinksPerMirror < this.numTargetLinksPerMirror) { // send shutdown signal to mirrors being too much
+            this.numTargetLinksPerMirror = numTargetLinksPerMirror;
+
             if (this.strategy instanceof NConnectedTopology) {
                 strategy.modifyNetworkAfterLinkRemove(this, props, timeStep);
             } else {
                 strategy.restartNetwork(this, props, timeStep);
             }
         }
+
+
+//        if (timeStep > 0) {
+//            //TODO: here change to modifyNetwork()
+//            if (this.strategy instanceof NConnectedTopology) {
+//                strategy.modifyNetworkAfterLinkRemove(this, props, timeStep);
+//            } else {
+//                strategy.restartNetwork(this, props, timeStep);
+//            }
+//        }
     }
 
     /**
@@ -322,6 +351,8 @@ public class Network {
 
         handleLinks(simTime);
 
+//        this.strategy.modifyNetworkAfterRemoveMirror(this,stoppedMirrors.size(), props, simTime);
+
         //run timeStep on effector
         effector.timeStep(simTime);
 
@@ -342,7 +373,7 @@ public class Network {
      */
     private void handleMirrors(int simTime) {
         //find stopped mirrors to remove them or invoke timeStep on the active mirrors
-        List<Mirror> stoppedMirrors = new ArrayList<>();
+        stoppedMirrors = new ArrayList<>();
         for (Mirror m : mirrors) {
             if (m.getState() == Mirror.State.STOPPED) {
                 stoppedMirrors.add(m);
@@ -353,6 +384,7 @@ public class Network {
                 m.timeStep(simTime);
             }
         }
+
         mirrors.removeAll(stoppedMirrors);
     }
 

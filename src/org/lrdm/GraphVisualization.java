@@ -242,92 +242,6 @@ public class GraphVisualization implements VisualizationStrategy {
         List<Integer> activeLinksGoalTS = new ArrayList<>(listForGoalActiveLinks);
         listForGoalActiveLinks.add(targetAL);
 
-//        if (timeStep <= 50) {
-//            listForGoalActiveLinks.add(35);
-//        }
-//        if (timeStep > 50 && timeStep <= 60) {
-//            listForGoalActiveLinks.add(60);
-//        }
-//        if (timeStep > 60) {
-//            listForGoalActiveLinks.add(35);
-//        }
-
-//
-//        if (timeStep <= 50) {
-//            listForGoalActiveLinks.add(35);
-//        }
-//        if (timeStep > 50 && timeStep <= 100) {
-//            listForGoalActiveLinks.add(20);
-//        }
-//        if (timeStep > 100) {
-//            listForGoalActiveLinks.add(50);
-//        }
-
-//        if (timeStep <= 50) {
-//            listForGoalActiveLinks.add(20);
-//        }
-//        if (timeStep > 50 && timeStep <= 100) {
-//            listForGoalActiveLinks.add(40);
-//        }
-//        if (timeStep > 100) {
-//            listForGoalActiveLinks.add(60);
-//        }
-
-//        if (timeStep <= 30) {
-//            listForGoalActiveLinks.add(20);
-//        }
-//        if (timeStep > 30 && timeStep <= 50) {
-//            listForGoalActiveLinks.add(40);
-//        }
-//        if (timeStep > 50 && timeStep <= 60) {
-//            listForGoalActiveLinks.add(50);
-//        }
-//        if (timeStep > 60 && timeStep <= 90) {
-//            listForGoalActiveLinks.add(70);
-//        }
-//        if (timeStep > 90 && timeStep <= 120) {
-//            listForGoalActiveLinks.add(80);
-//        }
-//        if (timeStep > 120) {
-//            listForGoalActiveLinks.add(100);
-//        }
-
-//        if (timeStep <= 50) {
-//            listForGoalActiveLinks.add(60);
-//        }
-//        if (timeStep > 50 && timeStep <= 100) {
-//            listForGoalActiveLinks.add(40);
-//        }
-//        if (timeStep > 100) {
-//            listForGoalActiveLinks.add(20);
-//        }
-
-//        if (timeStep <= 30) {
-//            listForGoalActiveLinks.add(100);
-//        }
-//        if (timeStep > 30 && timeStep <= 60) {
-//            listForGoalActiveLinks.add(80);
-//        }
-//        if (timeStep > 60 && timeStep <= 90) {
-//            listForGoalActiveLinks.add(60);
-//        }
-//        if (timeStep > 90 && timeStep <= 120) {
-//            listForGoalActiveLinks.add(40);
-//        }
-//        if (timeStep > 120) {
-//            listForGoalActiveLinks.add(20);
-//        }
-
-//        if (timeStep <= 50) {
-//            listForGoalActiveLinks.add(40);
-//        }
-//        if (timeStep > 50 && timeStep <= 60) {
-//            listForGoalActiveLinks.add(20);
-//        }
-//        if (timeStep > 60) {
-//            listForGoalActiveLinks.add(40);
-//        }
-
         List<Integer> ttwTS = new ArrayList<>(network.getTtwHistory().values());
         List<Integer> ttwGoalTS = Collections.nCopies(network.getTtwHistory().size(), 45);
 
@@ -344,31 +258,6 @@ public class GraphVisualization implements VisualizationStrategy {
         ttwChartPanel.repaint();
     }
 
-
-//    private void updateTimeStepWithRelatedParams(Network network, long timeStep, int bandwidth, int activeLinks, int timeToWrite) {
-//        simTimeLabel.setText("Simulation Time: "+timeStep);
-//
-//        List<Integer> timeSteps = new ArrayList<>(network.getBandwidthHistory().keySet());
-//        List<Integer> bandwidthTS = new ArrayList<>(network.getBandwidthHistory().values());
-//        List<Integer> bandwidthGoalTS = Collections.nCopies(network.getBandwidthHistory().size(),bandwidth);
-//        List<Integer> activeLinksTS = new ArrayList<>(network.getActiveLinksHistory().values());
-//        List<Integer> activeLinksGoalTS = Collections.nCopies(network.getActiveLinksHistory().size(),activeLinks);
-//        List<Integer> ttwTS = new ArrayList<>(network.getTtwHistory().values());
-//        List<Integer> ttwGoalTS = Collections.nCopies(network.getTtwHistory().size(), timeToWrite);
-//
-//        bandwidthChart.updateXYSeries(BANDWIDTH, timeSteps, bandwidthTS, null);
-//        bandwidthChart.updateXYSeries("Target", timeSteps, bandwidthGoalTS,null);
-//        chartPanel.repaint();
-//
-//        activeLinksChart.updateXYSeries(ACTIVE_LINKS, timeSteps, activeLinksTS, null);
-//        activeLinksChart.updateXYSeries("Target Active Links", timeSteps, activeLinksGoalTS,null);
-//        linkChartPanel.repaint();
-//
-//        timeToWriteChart.updateXYSeries(TTW, timeSteps, ttwTS, null);
-//        timeToWriteChart.updateXYSeries("Target Time To Write", timeSteps, ttwGoalTS,null);
-//        ttwChartPanel.repaint();
-//    }
-
     private void updateLinks(Network network) {
         for (Link l : network.getLinks()) {
             if (l.getState() != Link.State.CLOSED) {
@@ -380,6 +269,7 @@ public class GraphVisualization implements VisualizationStrategy {
                         && l.getSource().getState() != Mirror.State.STOPPED
                         && l.getTarget().getState() != Mirror.State.STOPPING
                         && l.getTarget().getState() != Mirror.State.STOPPED)) {
+                    System.out.println(l);
                     edge = graph.addEdge(Integer.toString(l.getID()), Integer.toString(l.getSource().getID()), Integer.toString(l.getTarget().getID()));
                 }
                 if (e.isPresent()) {

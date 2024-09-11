@@ -32,7 +32,7 @@ public class Analyze {
           return a.getNetwork().getActiveLinksHistory().get(a.getNetwork().getCurrentTimeStep()) > goalAL;
     }
     public static boolean analyzeLatenciesToIncreaseActiveLinks(Action a, Action b, int mirrors, int lpm) {
-        return analyzeActionsLatency(a.getEffect().getLatency(), b.getEffect().getLatency()) && mirrors > 2 && lpm > 1;
+        return analyzeActionsLatency(a.getEffect().getLatency(), b.getEffect().getLatency()) && mirrors > 2 && lpm > 2;
     }
 
     public static boolean analyzeLatenciesToDecreaseActiveLinks(Action a, Action b, int mirrors, int lpm) {

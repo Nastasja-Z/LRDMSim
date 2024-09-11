@@ -172,6 +172,11 @@ public class BalancedTreeTopologyStrategy extends TopologyStrategy {
         //TODO: impl
     }
 
+    @Override
+    public void modifyNetworkAfterRemoveMirror(Network n, int removeMirrors, Properties props, int simTime) {
+
+    }
+
     /**Removes the requested amount of mirrors from the network. The mirrors with the largest ID will be removed.
      *
      * @param n the {@link Network}
@@ -204,5 +209,10 @@ public class BalancedTreeTopologyStrategy extends TopologyStrategy {
         int m = a.getNetwork().getNumMirrors();
         if(a instanceof MirrorChange mc) m += mc.getNewMirrors();
         return m - 1;
+    }
+
+    @Override
+    public void modifyNetworkAfterAddLink(Network network, Properties props, int timeStep) {
+
     }
 }

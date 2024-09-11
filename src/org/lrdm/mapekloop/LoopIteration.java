@@ -24,8 +24,6 @@ public class LoopIteration {
 
     private static final Log log = LogFactory.getLog(LoopIteration.class);
     private Knowledge currentKnowledge;
-    // private static final String DEFAULT_CONFIG_NAME = "sim.conf";
-    //  private static final int epsilon = 2;
 
     private LinkProbe linkProbe;
     private MirrorProbe mirrorProbe;
@@ -33,8 +31,6 @@ public class LoopIteration {
     private int mirrorsByPrevStep;
     private int lpm;
     private double meanSquaredError;
-
-    //  private Map<Action, Integer> currentPossibleActions;
 
     public LoopIteration(TimedRDMSim sim) {
         currentKnowledge = new Knowledge(sim.getBandwidth(), sim.getTimeToWrite(), sim.getActiveLinks());
@@ -44,37 +40,36 @@ public class LoopIteration {
         mirrorsByPrevStep = mirrors;
         lpm = mirrorProbe.getNumTargetLinksPerMirror();
         meanSquaredError = 0;
-        // currentPossibleActions = new HashMap<>();
     }
 
     public double runMAPEKCheckOnIteration(int iteration, TimedRDMSim sim, int currentSituationCode) {
         switch (currentSituationCode) {
             case 1:
                 //35 60(short) 35
-                 pickSituation(sim, iteration);
+//                pickSituation(sim, iteration);
 
-//                pickSituationNoLatency(sim, iteration);
+                pickSituationNoLatency(sim, iteration);
 
                 //   add/remove some mirrors pick situation
-                // someMirrorsPickSituation(sim, iteration);
+//                someMirrorsPickSituation(sim, iteration);
                 break;
             case 2:
                 //35 20 50
 //                highLowHighSituation(sim, iteration);
-                //  highLowHighSituationNoLatency(sim, iteration);
+                  highLowHighSituationNoLatency(sim, iteration);
 
                 // add/remove some mirrors 35 20 50
-                someMirrorsHighLowHighSituation(sim, iteration);
+//                someMirrorsHighLowHighSituation(sim, iteration);
                 break;
             case 3:
                 //20 40 60  & add/remove some mirrors
-                highHighHighSituation(sim, iteration);
-//                highHighHighSituationNoLatency(sim, iteration);
+//                highHighHighSituation(sim, iteration);
+                highHighHighSituationNoLatency(sim, iteration);
                 break;
             case 4:
                 //20 40 50 70 80 100 & add/remove some mirrors
-                continuouslyHighSituation(sim, iteration);
-//                continuouslyHighSituationNoLatency(sim, iteration);
+//                continuouslyHighSituation(sim, iteration);
+                continuouslyHighSituationNoLatency(sim, iteration);
                 break;
             case 5:
                 //60 40 20
@@ -85,7 +80,7 @@ public class LoopIteration {
                 continuouslyLowSituation(sim, iteration);
                 break;
             case 7:
-                //reversed pick situation: 40 20 40
+                //reversed peak!!!! situation: 40 20 40
                 reversedPickSituation(sim, iteration);
                 break;
             default:
@@ -704,8 +699,8 @@ public class LoopIteration {
 
 //for direct match on 35 at first bound use Analyze.analyzeActiveLinksEquality(mirrorAction,goalAL)
         if (!Analyze.analyzeActiveLinksComparison(mirrorAction, goalAL)) {
-            // executeToIncrease(mirrorAction, lpmAction, sim, iteration);
-            executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, goalAL);
+             executeToIncrease(mirrorAction, lpmAction, sim, iteration);
+//            executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, goalAL);
         } else {
             mirrors = Plan.addMirror(mirrors, true);
             lpm = Plan.addLinksPerMirror(lpm, false);
@@ -729,7 +724,7 @@ public class LoopIteration {
             } else {
                 mirrors = Plan.addMirror(mirrors, false);
                 lpm = Plan.addLinksPerMirror(lpm, true);
-                if (mirrors >= 3 && lpm > 2) {
+                if (mirrors > 4 && lpm > 2) {
                     mirrors = Plan.addMirror(mirrors, false);
                     lpm = Plan.addLinksPerMirror(lpm, true);
                     mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
@@ -752,21 +747,23 @@ public class LoopIteration {
     }
 
     private void fromLowToHighNoLatency(TimedRDMSim sim, int iteration, int goalAL) {
-        mirrors = countNumberOfNeededMirrorsForCurrentAL(sim, goalAL);// Plan.addMirror(mirrors, false);
+//        mirrors = countNumberOfNeededMirrorsForCurrentAL(sim, goalAL);// Plan.addMirror(mirrors, false);
+        mirrors = Plan.addMirror(mirrors, false);
         lpm = Plan.addLinksPerMirror(lpm, true);
         MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
         TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
         if (!Analyze.analyzeActiveLinksComparison(mirrorAction, goalAL)) {
             //log.info("mirror delta: " + mirrorAction.getEffect().getDeltaActiveLinks() + " lpm delta: " + lpmAction.getEffect().getDeltaActiveLinks());
             //if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
-            if (mirrors > 2) {
+//            if (mirrors > 2) {
+            if(lpm < mirrors/ 2 +2 && mirrors>3){
                 Execute.execute(sim, mirrorAction, iteration, true);
                 lpm = Plan.addLinksPerMirror(lpm, false);
                    /* } else {
                         Execute.execute(sim, lpmAction, iteration, true);
                         mirrors = Plan.addMirror(mirrors, true);
                     }*/
-            } else {
+            } else if(lpm < mirrors/ 2 +2) {
                 Execute.execute(sim, lpmAction, iteration, true);
                 mirrors = Plan.addMirror(mirrors, true);
             }
@@ -779,17 +776,20 @@ public class LoopIteration {
 
     private void executeToIncrease(Action mirrorAction, Action lpmAction, TimedRDMSim sim, int iteration) {
         //System.out.println("NeededAL for " + iteration + " timestep is: " + countNumberOfNeededAL(sim));//TODO: impl here 8. step
-        if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && mirrors - 2 > lpm) {
+        if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && lpm < mirrors / 2 + 2) {
             Execute.execute(sim, lpmAction, iteration, true);
             mirrors = Plan.addMirror(mirrors, true);
-        } else {
+        } else if (lpm < mirrors / 2 + 2){
             Execute.execute(sim, mirrorAction, iteration, true);
+            lpm = Plan.addLinksPerMirror(lpm, false);
+        } else {
+            mirrors = Plan.addMirror(mirrors, true);
             lpm = Plan.addLinksPerMirror(lpm, false);
         }
     }
 
     private void executeToIncreaseBySomeMirrors(Action mirrorAction, Action lpmAction, TimedRDMSim sim, int iteration, int currentALGoal) {
-        if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && mirrors - 2 > lpm) {
+        if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && lpm < mirrors / 2 + 2) {
             Execute.execute(sim, lpmAction, iteration, true);
             mirrors = Plan.addMirror(mirrors, true);
         } else {

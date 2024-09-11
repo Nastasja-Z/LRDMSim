@@ -6,18 +6,20 @@ import org.lrdm.mapekloop.LoopIteration;
 import org.lrdm.topologies.NConnectedTopology;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
 
 public class ExampleMAPEKOptimizer {
-    private static Integer CURRENT_SITUATION_CODE = 1;
+    private static Integer CURRENT_SITUATION_CODE = 6;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
         List<Double> meanSquaredErrorList = new ArrayList<>();
         Map<Integer, List<Double>> meanSquaredErrorMap = new HashMap<>();
-        for (int i = 0; i < 7; i++) {
-            for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < 1; i++) {
+            for (int j = 0; j < 20; j++) {
                 meanSquaredErrorList.add(automaticRun());
             }
             meanSquaredErrorMap.put(CURRENT_SITUATION_CODE, meanSquaredErrorList);
@@ -30,6 +32,8 @@ public class ExampleMAPEKOptimizer {
         }
 
         EventQueue.invokeLater(() -> MeanSquaredErrorBoxPlot.display(meanSquaredErrorMap));
+        MeanSquaredErrorBoxPlot.writeDataLineByLine(meanSquaredErrorMap);
+
     }
 
     private static double automaticRun() {
