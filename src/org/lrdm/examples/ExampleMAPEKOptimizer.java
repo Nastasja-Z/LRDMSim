@@ -12,7 +12,7 @@ import java.util.List;
 
 
 public class ExampleMAPEKOptimizer {
-    private static Integer CURRENT_SITUATION_CODE = 6;
+    private static Integer CURRENT_SITUATION_CODE = 5;
 
     public static void main(String[] args) throws IOException {
 

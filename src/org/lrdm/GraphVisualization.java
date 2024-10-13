@@ -1,6 +1,7 @@
 package org.lrdm;
 
 import org.graphstream.graph.Edge;
+import org.graphstream.graph.ElementNotFoundException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -259,7 +260,9 @@ public class GraphVisualization implements VisualizationStrategy {
     }
 
     private void updateLinks(Network network) {
+        System.out.println("ITERATION: "+ network.getCurrentTimeStep());
         for (Link l : network.getLinks()) {
+//            System.out.println(l);
             if (l.getState() != Link.State.CLOSED) {
                 Optional<Edge> e = graph.edges().filter(edge -> edge.getSourceNode().getId().equals(Integer.toString(l.getSource().getID())) &&
                         edge.getTargetNode().getId().equals(Integer.toString(l.getTarget().getID()))).findAny();
@@ -269,8 +272,16 @@ public class GraphVisualization implements VisualizationStrategy {
                         && l.getSource().getState() != Mirror.State.STOPPED
                         && l.getTarget().getState() != Mirror.State.STOPPING
                         && l.getTarget().getState() != Mirror.State.STOPPED)) {
-                    System.out.println(l);
+//                    System.out.println(l);
+//                    if(graph.getNode(l.getSource().getID())==null || graph.getNode(l.getTarget().getID())==null) {
+//                        System.out.println("No link found");
+//                    }
+                    try {
                     edge = graph.addEdge(Integer.toString(l.getID()), Integer.toString(l.getSource().getID()), Integer.toString(l.getTarget().getID()));
+
+                    } catch (Exception ex){
+                       ex.printStackTrace();
+                    }
                 }
                 if (e.isPresent()) {
                     edge = e.get();
