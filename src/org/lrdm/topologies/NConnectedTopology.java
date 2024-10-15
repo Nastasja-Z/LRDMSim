@@ -327,7 +327,7 @@ public class NConnectedTopology extends TopologyStrategy {
                     Link linkToAdd = new Link(IDGenerator.getInstance().getNextID(), start, n.getMirrors().get(i), 0, props);
                     start.addLink(linkToAdd);
                     n.getMirrors().get(i).addLink(linkToAdd);
-                    if(linkToAdd.getTarget().getID()== linkToAdd.getSource().getID())
+                    if (linkToAdd.getTarget().getID() == linkToAdd.getSource().getID())
                         System.out.println("here");
                     linksToAdd.add(linkToAdd);
                     break;
@@ -339,7 +339,7 @@ public class NConnectedTopology extends TopologyStrategy {
             Random rand = new Random();
             int currentIndex = rand.nextInt(n.getMirrors().size() - 1); // maybe -2
 //            if (n.getMirrorsSortedById().get(currentIndex).getLinks().size() == n.getNumTargetLinksPerMirror()) {
-            Link linkToDelete = n.getMirrorsSortedById().get(currentIndex).getLinks().stream().toList().stream().filter(mirror -> mirror.getSource().getID()!= start.getID() && mirror.getTarget().getID()!= start.getID()).toList().get(0);
+            Link linkToDelete = n.getMirrorsSortedById().get(currentIndex).getLinks().stream().toList().stream().filter(mirror -> mirror.getSource().getID() != start.getID() && mirror.getTarget().getID() != start.getID()).toList().get(0);
             Mirror firstTargetMirror = linkToDelete.getTarget();
             Mirror secondTargetMirror = linkToDelete.getSource();
             Link firstLinkToAdd = new Link(IDGenerator.getInstance().getNextID(), start, firstTargetMirror, 0, props);
@@ -354,10 +354,10 @@ public class NConnectedTopology extends TopologyStrategy {
             start.addLink(secondLinkToAdd);
             secondTargetMirror.addLink(secondLinkToAdd);
 
-            if(firstLinkToAdd.getTarget().getID() == firstLinkToAdd.getSource().getID())
+            if (firstLinkToAdd.getTarget().getID() == firstLinkToAdd.getSource().getID())
                 System.out.println("here");
 
-            if(secondLinkToAdd.getTarget().getID()== secondLinkToAdd.getSource().getID())
+            if (secondLinkToAdd.getTarget().getID() == secondLinkToAdd.getSource().getID())
                 System.out.println("here");
             linksToAdd.add(firstLinkToAdd);
             linksToAdd.add(secondLinkToAdd);
@@ -378,8 +378,8 @@ public class NConnectedTopology extends TopologyStrategy {
 
         List<Link> linksToRemove = network.getLinks().stream().toList();
 
-        for(Link link : linksToRemove) {
-            if(link.getSource() == mirror) {
+        for (Link link : linksToRemove) {
+            if (link.getSource() == mirror) {
                 Mirror targetMirror = link.getTarget();
                 Mirror sourceMirror = link.getSource();
                 targetMirror.removeLink(link);
@@ -768,10 +768,15 @@ public class NConnectedTopology extends TopologyStrategy {
         //if odd -> even mirrors with odd links: REMOVE MIRROR THAT HAS ONE LINK LESS, and then same
         //if even -> odd mirrors with odd links: same, but one will stay with one less link
         for (int i = 0; i < removeMirrors; i++) {
-            if (!isEven(n.getMirrors().size()) && !isEven(n.getLinks().size())) {
+            if (!isEven(n.getMirrors().size()) && !isEven(n.getNumTargetLinks())) {
+//          if (!isEven(n.getMirrors().size()) && !isEven(n.getLinks().size())) {
 //HERE ERROR Index 0 out of bounds for length 0
-                Mirror m = n.getMirrors().stream().filter(it -> it.getLinks().size() < n.getNumTargetLinksPerMirror()).toList().get(0);
-                deleteMirror(m, n);
+                if (!n.getMirrors().stream().filter(it -> it.getLinks().size() < n.getNumTargetLinksPerMirror()).toList().isEmpty()) {
+                    Mirror m = n.getMirrors().stream().filter(it -> it.getLinks().size() < n.getNumTargetLinksPerMirror()).toList().get(0);
+                    deleteMirror(m, n);
+                } else {
+                    deleteMirror(n.getMirrorsSortedById().get(n.getMirrorsSortedById().size() - 1), n);
+                }
             } else {
                 deleteMirror(n.getMirrorsSortedById().get(n.getMirrorsSortedById().size() - 1), n);
             }
