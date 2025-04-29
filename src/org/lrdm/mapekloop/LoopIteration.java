@@ -10,10 +10,12 @@ import org.lrdm.effectors.TopologyChange;
 import org.lrdm.examples.ExampleMAPEKOptimizer;
 import org.lrdm.probes.LinkProbe;
 import org.lrdm.probes.MirrorProbe;
+import org.lrdm.topologies.BalancedTreeTopologyStrategy;
 import org.lrdm.topologies.FullyConnectedTopology;
 import org.lrdm.topologies.NConnectedTopology;
 import org.lrdm.util.IDGenerator;
 
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,9 +48,11 @@ public class LoopIteration {
         switch (currentSituationCode) {
             case 1:
                 //35 60(short) 35
-//                pickSituation(sim, iteration);
+                pickSituation(sim, iteration);
+//                pickSituationNoLatency(sim, iteration);
+//                pickSituationBalancedTree(sim, iteration);
+//                pickSituationNoLatencyBalancedTree(sim, iteration);
 
-                pickSituationNoLatency(sim, iteration);
 
                 //   add/remove some mirrors pick situation
 //                someMirrorsPickSituation(sim, iteration);
@@ -73,14 +77,18 @@ public class LoopIteration {
                 break;
             case 5:
                 //60 40 20
-                highLowLowSituation(sim, iteration);
+//                highLowLowSituation(sim, iteration);
+                highLowLowNoLatencySituation(sim, iteration);
+//                highLowLowBTSituation(sim, iteration);
                 break;
             case 6:
                 //100 80 60 40 20
                 continuouslyLowSituation(sim, iteration);
+//                continuouslyLowNoLatencySituation(sim, iteration);
                 break;
             case 7:
                 //reversed peak!!!! situation: 40 20 40
+                //buggy
                 reversedPickSituation(sim, iteration);
                 break;
             default:
@@ -93,6 +101,23 @@ public class LoopIteration {
         }
         return -1;
     }
+
+    public void topologiesTest(TimedRDMSim sim, int iteration, int currentStrategy) {
+        switch (currentStrategy) {
+            case 1:
+                sim.getEffector().setStrategy(new BalancedTreeTopologyStrategy(), 2);
+                break;
+            case 2:
+                sim.getEffector().setStrategy(new FullyConnectedTopology(), 2);
+                break;
+            case 3:
+                sim.getEffector().setStrategy(new NConnectedTopology(), 2);
+                break;
+            default:
+                break;
+        }
+    }
+
 
     private void someMirrorsHighLowHighSituation(TimedRDMSim sim, int iteration) {
         if (iteration > 10 && iteration <= 50) {
@@ -116,13 +141,6 @@ public class LoopIteration {
                         mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
                         lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
                         executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, 20);
-//                        if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm)) {
-//                            Execute.execute(sim, lpmAction, iteration, true);
-//                            mirrors = Plan.addMirror(mirrors, true);
-//                        } else {
-//                            Execute.execute(sim, mirrorAction, iteration, true);
-//                            lpm = Plan.addLinksPerMirror(lpm, false);
-//                        }
                     }
                 }
             } else {
@@ -179,7 +197,6 @@ public class LoopIteration {
                 lpm = Plan.addLinksPerMirror(lpm, false);
             }
             countMeanSquaredError(60, lpmAction);
-//            System.out.println("countNumberOfNeededMirrorsForCurrentAL: " + countNumberOfNeededMirrorsForCurrentAL(sim, 60));
         }
         if (iteration > 60) {
             mirrors = Plan.addMirror(mirrors, true);
@@ -220,16 +237,6 @@ public class LoopIteration {
             TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
             //meanSquaredError += Math.pow(Math.abs(40 - mirrorAction.getNetwork().getActiveLinksHistory().get(mirrorAction.getNetwork().getCurrentTimeStep())), 2);
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 40)) {
-//                if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && mirrors - 2 > lpm) {
-//                    Execute.execute(sim, lpmAction, iteration, true);
-//                    mirrors = Plan.addMirror(mirrors, true);
-//                } else {
-//                    if (mirrors > 2) {
-//                        Execute.execute(sim, mirrorAction, iteration, true);
-//                        lpm = Plan.addLinksPerMirror(lpm, false);
-//                        executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, 35);
-//                    }
-//                }
                 executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, 40);
             } else {
                 mirrors = Plan.addMirror(mirrors, true);
@@ -250,15 +257,6 @@ public class LoopIteration {
 //for direct match on 35 at first bound use Analyze.analyzeActiveLinksEquality(mirrorAction,goalAL)
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 40)) {
                 if (!Analyze.analyzeActiveLinksUnderComparison(mirrorAction, 40)) {
-//                    if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && mirrors - 2 > lpm) {
-//                        Execute.execute(sim, lpmAction, iteration, true);
-//                        mirrors = Plan.addMirror(mirrors, true);
-//                    } else {
-//                        if (mirrors > 1) {
-//                            Execute.execute(sim, mirrorAction, iteration, true);
-//                            lpm = Plan.addLinksPerMirror(lpm, false);
-//                        }
-//                    }
                     executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, 40);
 
                 } else {
@@ -272,15 +270,6 @@ public class LoopIteration {
                         mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
                         lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
                         executeToDecreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, 40);
-//                        if (!Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && mirrors > 1) {
-//                            Execute.execute(sim, mirrorAction, iteration, false);
-//                            lpm = Plan.addLinksPerMirror(lpm, true);
-//                        } else {
-//                            if (mirrors - 2 > lpm) {
-//                                Execute.execute(sim, lpmAction, iteration, false);
-//                                mirrors = Plan.addMirror(mirrors, false);
-//                            }
-//                        }
                     }
                 }
                 //todo: add second check if more than 40
@@ -291,17 +280,89 @@ public class LoopIteration {
             }
             countMeanSquaredError(40, lpmAction);
         }
+    }
 
-//        if (iteration == 149) {
-//            log.info("mean squared error by the last step: " + meanSquaredError / iteration);
-//        }
+    private void continuouslyLowNoLatencySituation(TimedRDMSim sim, int iteration) {
+        sim.getEffector().setStrategy(new NConnectedTopology(), 31);
+
+        if (iteration <= 30) {
+            mirrors = Plan.addMirror(mirrors, false);
+            lpm = Plan.addLinksPerMirror(lpm, true);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+            TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
+            TopologyChange topologyChangeAction = Plan.topologyAction(sim, iteration, new FullyConnectedTopology());
+
+            if (!Analyze.analyzeActiveLinksComparison(topologyChangeAction, 100)) {
+                Random random = new Random();
+                int choice = random.nextInt(3 - 1 + 1) + 1;
+
+                if (choice == 3) {
+                    sim.getEffector().setStrategy(new FullyConnectedTopology(), 2);
+                    mirrors = Plan.addMirror(mirrors, true);
+                    lpm = Plan.addLinksPerMirror(lpm, false);
+                } else if (choice == 2) {
+                    sim.getEffector().setStrategy(new NConnectedTopology(), iteration);
+                    if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 100)) {
+                        executeToIncrease(mirrorAction, lpmAction, sim, iteration);
+                    } else {
+                        mirrors = Plan.addMirror(mirrors, true);
+                        lpm = Plan.addLinksPerMirror(lpm, false);
+                    }
+                } else {
+                    mirrors = Plan.addMirror(mirrors, true);
+                    lpm = Plan.addLinksPerMirror(lpm, false);
+                }
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+                lpm = Plan.addLinksPerMirror(lpm, false);
+            }
+        }
+        if (iteration > 30 && iteration <= 60) {
+            fromHighToLowNoLatency(sim, iteration, 80, false);
+        }
+        if (iteration > 60 && iteration <= 90) {
+            fromHighToLowNoLatency(sim, iteration, 60, false);
+        }
+        if (iteration > 90 && iteration <= 120) {
+            fromHighToLowNoLatency(sim, iteration, 40, false);
+        }
+        if (iteration > 120) {
+            fromHighToLowNoLatency(sim, iteration, 20, false);
+        }
     }
 
     private void continuouslyLowSituation(TimedRDMSim sim, int iteration) {
-        sim.getEffector().setStrategy(new FullyConnectedTopology(), 2);
         sim.getEffector().setStrategy(new NConnectedTopology(), 30);
-//        if (iteration <= 30) {
-//        }
+
+
+        if (iteration < 30) {
+            mirrors = Plan.addMirror(mirrors, true);
+            lpm = Plan.addLinksPerMirror(lpm, false);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+            TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
+            TopologyChange topologyChangeAction = Plan.topologyAction(sim, iteration, new FullyConnectedTopology());
+
+            if (!Analyze.analyzeActiveLinksComparison(topologyChangeAction, 100)) {
+                if (topologyChangeAction.getEffect().getLatency() < mirrorAction.getEffect().getLatency()) {
+                    sim.getEffector().setStrategy(new FullyConnectedTopology(), 2);
+                    mirrors = Plan.addMirror(mirrors, false);
+                    lpm = Plan.addLinksPerMirror(lpm, true);
+                } else {
+                    sim.getEffector().setStrategy(new NConnectedTopology(), iteration);
+                    if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 100)) {
+                        executeToIncrease(mirrorAction, lpmAction, sim, iteration);
+                    } else {
+                        mirrors = Plan.addMirror(mirrors, true);
+                        lpm = Plan.addLinksPerMirror(lpm, false);
+                    }
+                }
+            } else {
+                mirrors = Plan.addMirror(mirrors, false);
+                lpm = Plan.addLinksPerMirror(lpm, true);
+            }
+
+
+        }
         if (iteration >= 30 && iteration <= 60) {
             fromHighToLow(sim, iteration, 80, false);
         }
@@ -313,6 +374,62 @@ public class LoopIteration {
         }
         if (iteration > 120) {
             fromHighToLow(sim, iteration, 20, false);
+        }
+    }
+
+    private void highLowLowBTSituation(TimedRDMSim sim, int iteration) {
+        sim.getEffector().setStrategy(new BalancedTreeTopologyStrategy(), 2);
+        if (iteration <= 50) {
+            mirrors = Plan.addMirror(mirrors, false);
+
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+
+            if (!Analyze.analyzeActiveLinksEquality(mirrorAction, 60) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(60, mirrorAction);
+        }
+        if (iteration > 50 && iteration <= 100) {
+            mirrors = Plan.addMirror(mirrors, false);
+
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+
+            if (!Analyze.analyzeActiveLinksEquality(mirrorAction, 40) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(40, mirrorAction);
+        }
+        if (iteration > 100) {
+            mirrors = Plan.addMirror(mirrors, false);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+
+            if (Analyze.analyzeActiveLinksForBTComparison(mirrorAction, 20) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else if (!Analyze.analyzeActiveLinksForBTComparison(mirrorAction, 20)) {
+                mirrors = Plan.addMirror(mirrors, true);
+                mirrors = Plan.addMirror(mirrors, true);
+                Execute.execute(sim, mirrorAction, iteration, false);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(20, mirrorAction);
+        }
+    }
+
+    private void highLowLowNoLatencySituation(TimedRDMSim sim, int iteration) {
+        if (iteration <= 50) {
+            fromLowToHighNoLatency(sim, iteration, 60);
+        }
+        if (iteration > 50 && iteration <= 100) {
+            fromHighToLowNoLatency(sim, iteration, 40, false);
+        }
+        if (iteration > 100) {
+            fromHighToLowNoLatency(sim, iteration, 20, false);
+
         }
     }
 
@@ -368,7 +485,6 @@ public class LoopIteration {
             fromLowToHigh(sim, iteration, 70);
         }
         if (iteration > 90 && iteration <= 120) {
-//            fromLowToHigh(sim, iteration, 80);
             mirrors = Plan.addMirror(mirrors, false);
             lpm = Plan.addLinksPerMirror(lpm, true);
 
@@ -377,7 +493,6 @@ public class LoopIteration {
 
 //for direct match on 35 at first bound use Analyze.analyzeActiveLinksEquality(mirrorAction,goalAL)
             if (!Analyze.analyzeActiveLinksEquality(mirrorAction, 80)) {
-                // executeToIncrease(mirrorAction, lpmAction, sim, iteration);
                 executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, 80);
             } else {
                 mirrors = Plan.addMirror(mirrors, true);
@@ -386,7 +501,6 @@ public class LoopIteration {
             countMeanSquaredError(80, lpmAction);
         }
         if (iteration > 120) {
-//            fromLowToHigh(sim, iteration, 100);
             countMeanSquaredError(100, topologyAction);
         }
     }
@@ -424,14 +538,9 @@ public class LoopIteration {
             TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 35)) {
                 log.info("mirror delta: " + mirrorAction.getEffect().getDeltaActiveLinks() + " lpm delta: " + lpmAction.getEffect().getDeltaActiveLinks());
-                //if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
                 if (mirrors > 2) {
                     Execute.execute(sim, mirrorAction, iteration, true);
                     lpm = Plan.addLinksPerMirror(lpm, false);
-                   /* } else {
-                        Execute.execute(sim, lpmAction, iteration, true);
-                        mirrors = Plan.addMirror(mirrors, true);
-                    }*/
                 } else {
                     Execute.execute(sim, lpmAction, iteration, true);
                     mirrors = Plan.addMirror(mirrors, true);
@@ -448,10 +557,6 @@ public class LoopIteration {
             MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
             TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 20)) {
-                // if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
-//                    Execute.execute(sim, mirrorAction, iteration, false);
-//                    lpm = Plan.addLinksPerMirror(lpm, true);
-                //} else {
                 if (lpm > 2) {
                     Execute.execute(sim, lpmAction, iteration, false);
                     mirrors = Plan.addMirror(mirrors, false);
@@ -459,7 +564,6 @@ public class LoopIteration {
                     Execute.execute(sim, mirrorAction, iteration, false);
                     lpm = Plan.addLinksPerMirror(lpm, true);
                 }
-                //}
             } else {
                 mirrors = Plan.addMirror(mirrors, false);
                 lpm = Plan.addLinksPerMirror(lpm, true);
@@ -473,14 +577,9 @@ public class LoopIteration {
             TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 50)) {
                 log.info("mirror delta: " + mirrorAction.getEffect().getDeltaActiveLinks() + " lpm delta: " + lpmAction.getEffect().getDeltaActiveLinks());
-                //if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
                 if (mirrors > 2) {
                     Execute.execute(sim, mirrorAction, iteration, true);
                     lpm = Plan.addLinksPerMirror(lpm, false);
-                   /* } else {
-                        Execute.execute(sim, lpmAction, iteration, true);
-                        mirrors = Plan.addMirror(mirrors, true);
-                    }*/
                 } else {
                     Execute.execute(sim, lpmAction, iteration, true);
                     mirrors = Plan.addMirror(mirrors, true);
@@ -547,6 +646,89 @@ public class LoopIteration {
         }
     }
 
+    private void pickSituationNoLatencyBalancedTree(TimedRDMSim sim, int iteration) {
+        sim.getEffector().setStrategy(new BalancedTreeTopologyStrategy(), 2);
+
+        if (iteration <= 50) {
+            mirrors = Plan.addMirror(mirrors, false);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+            if (!Analyze.analyzeActiveLinksEquality(mirrorAction, 35) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(35, mirrorAction);
+        }
+        if (iteration > 50 && iteration <= 60) {
+            mirrors = Plan.addMirror(mirrors, false);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+            if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 60) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(60, mirrorAction);
+        }
+        if (iteration > 60) {
+            mirrors = Plan.addMirror(mirrors, false);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+            if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 35)) {
+                if (Analyze.analyzeActiveLinksForBTComparison(mirrorAction, 35) && mirrors > 3) {
+                    Execute.execute(sim, mirrorAction, iteration, true);
+                } else if (!Analyze.analyzeActiveLinksForBTComparison(mirrorAction, 35)) {
+                    mirrors = Plan.addMirror(mirrors, true);
+                    mirrors = Plan.addMirror(mirrors, true);
+                    mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+                    Execute.execute(sim, mirrorAction, iteration, false);
+                }
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(35, mirrorAction);
+        }
+    }
+
+    private void pickSituationBalancedTree(TimedRDMSim sim, int iteration) {
+        sim.getEffector().setStrategy(new BalancedTreeTopologyStrategy(), 2);
+        if (iteration <= 50) {
+            mirrors = Plan.addMirror(mirrors, false);
+
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+
+            if (!Analyze.analyzeActiveLinksEquality(mirrorAction, 35) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(35, mirrorAction);
+        }
+        if (iteration > 50 && iteration <= 60) {
+            mirrors = Plan.addMirror(mirrors, false);
+
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+
+            if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 60) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(60, mirrorAction);
+        }
+        if (iteration > 60) {
+            mirrors = Plan.addMirror(mirrors, false);
+            MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+
+            if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 35) && mirrors > 3) {
+                Execute.execute(sim, mirrorAction, iteration, true);
+
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+            }
+            countMeanSquaredError(35, mirrorAction);
+        }
+    }
+
+
     private void pickSituationNoLatency(TimedRDMSim sim, int iteration) {
         if (iteration > 10 && iteration <= 50) {
             mirrors = Plan.addMirror(mirrors, false);
@@ -579,7 +761,6 @@ public class LoopIteration {
             MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
             TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 60)) {
-                //if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
                 if (mirrors > 2) {
                     Execute.execute(sim, mirrorAction, iteration, true);
                     lpm = Plan.addLinksPerMirror(lpm, false);
@@ -592,11 +773,6 @@ public class LoopIteration {
                         lpm = Plan.addLinksPerMirror(lpm, false);
                     }
                 }
-
-//                } else {
-//                    Execute.execute(sim, lpmAction, iteration, true);
-//                    mirrors = Plan.addMirror(mirrors, true);
-//                }
             } else {
                 mirrors = Plan.addMirror(mirrors, true);
                 lpm = Plan.addLinksPerMirror(lpm, false);
@@ -609,10 +785,6 @@ public class LoopIteration {
             MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
             TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
             if (!Analyze.analyzeActiveLinksComparison(mirrorAction, 35)) {
-                // if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
-//                    Execute.execute(sim, mirrorAction, iteration, false);
-//                    lpm = Plan.addLinksPerMirror(lpm, true);
-                //} else {
                 if (lpm > 2) {
                     Execute.execute(sim, lpmAction, iteration, false);
                     mirrors = Plan.addMirror(mirrors, false);
@@ -620,7 +792,6 @@ public class LoopIteration {
                     mirrors = Plan.addMirror(mirrors, false);
                     lpm = Plan.addLinksPerMirror(lpm, true);
                 }
-                //}
             } else {
                 mirrors = Plan.addMirror(mirrors, false);
                 lpm = Plan.addLinksPerMirror(lpm, true);
@@ -699,11 +870,26 @@ public class LoopIteration {
 
 //for direct match on 35 at first bound use Analyze.analyzeActiveLinksEquality(mirrorAction,goalAL)
         if (!Analyze.analyzeActiveLinksComparison(mirrorAction, goalAL)) {
-             executeToIncrease(mirrorAction, lpmAction, sim, iteration);
-//            executeToIncreaseBySomeMirrors(mirrorAction, lpmAction, sim, iteration, goalAL);
+            executeToIncrease(mirrorAction, lpmAction, sim, iteration);
         } else {
             mirrors = Plan.addMirror(mirrors, true);
             lpm = Plan.addLinksPerMirror(lpm, false);
+        }
+        countMeanSquaredError(goalAL, lpmAction);
+    }
+
+    private void fromHighToLowNoLatency(TimedRDMSim sim, int iteration, int goalAL, boolean isReversed) {
+        mirrors = Plan.addMirror(mirrors, true);
+        lpm = Plan.addLinksPerMirror(lpm, false);
+        MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
+        TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
+
+        if (!Analyze.analyzeActiveLinksComparison(mirrorAction, goalAL) && Analyze.analyzeActiveLinksUnderComparison(mirrorAction, goalAL)) {
+            Execute.execute(sim, mirrorAction, iteration, false);
+            lpm = Plan.addLinksPerMirror(lpm, true);
+        } else {
+            mirrors = Plan.addMirror(mirrors, false);
+            lpm = Plan.addLinksPerMirror(lpm, true);
         }
         countMeanSquaredError(goalAL, lpmAction);
     }
@@ -747,25 +933,20 @@ public class LoopIteration {
     }
 
     private void fromLowToHighNoLatency(TimedRDMSim sim, int iteration, int goalAL) {
-//        mirrors = countNumberOfNeededMirrorsForCurrentAL(sim, goalAL);// Plan.addMirror(mirrors, false);
         mirrors = Plan.addMirror(mirrors, false);
         lpm = Plan.addLinksPerMirror(lpm, true);
         MirrorChange mirrorAction = Plan.mirrorAction(sim, mirrors, iteration);
         TargetLinkChange lpmAction = Plan.linksPerMirrorAction(sim, lpm, iteration);
         if (!Analyze.analyzeActiveLinksComparison(mirrorAction, goalAL)) {
-            //log.info("mirror delta: " + mirrorAction.getEffect().getDeltaActiveLinks() + " lpm delta: " + lpmAction.getEffect().getDeltaActiveLinks());
-            //if (mirrorAction.getEffect().getDeltaActiveLinks() < lpmAction.getEffect().getDeltaActiveLinks()) {
-//            if (mirrors > 2) {
-            if(lpm < mirrors/ 2 +2 && mirrors>3){
+            if (lpm < mirrors / 2 + 2 && mirrors > 3) {
                 Execute.execute(sim, mirrorAction, iteration, true);
                 lpm = Plan.addLinksPerMirror(lpm, false);
-                   /* } else {
-                        Execute.execute(sim, lpmAction, iteration, true);
-                        mirrors = Plan.addMirror(mirrors, true);
-                    }*/
-            } else if(lpm < mirrors/ 2 +2) {
+            } else if (lpm < mirrors / 2 + 2) {
                 Execute.execute(sim, lpmAction, iteration, true);
                 mirrors = Plan.addMirror(mirrors, true);
+            } else {
+                mirrors = Plan.addMirror(mirrors, true);
+                lpm = Plan.addLinksPerMirror(lpm, false);
             }
         } else {
             mirrors = Plan.addMirror(mirrors, true);
@@ -779,7 +960,7 @@ public class LoopIteration {
         if (Analyze.analyzeLatenciesToIncreaseActiveLinks(mirrorAction, lpmAction, mirrors, lpm) && lpm < mirrors / 2 + 2) {
             Execute.execute(sim, lpmAction, iteration, true);
             mirrors = Plan.addMirror(mirrors, true);
-        } else if (lpm < mirrors / 2 + 2){
+        } else if (lpm < mirrors / 2 + 2) {
             Execute.execute(sim, mirrorAction, iteration, true);
             lpm = Plan.addLinksPerMirror(lpm, false);
         } else {
@@ -841,7 +1022,6 @@ public class LoopIteration {
         }
     }
 
-    //TODO: test
     public int countNumberOfNeededMirrorsForCurrentAL(TimedRDMSim sim, int currentALgoal) {
         return (int) Math.round(0.5 + Math.sqrt(1 + (double) (800 * sim.getNetwork().getNumActiveLinks()) / currentALgoal) / 2);
     }
@@ -863,14 +1043,11 @@ public class LoopIteration {
     }
 
     public void changeMirrorsBecauseAL(int iteration, TimedRDMSim sim) {
-        //Action b = Plan.linksPerMirrorAction(sim,lpm,iteration);
         mirrors--;
         Action a = new MirrorChange(sim.getNetwork(), IDGenerator.getInstance().getNextID(), iteration + 1, mirrors);
 
         if (Analyze.analyzeActiveLinksEquality(a, 35)) {
             Logger.getLogger(ExampleMAPEKOptimizer.class.getName()).info("\t-> remove mirror to increase AL%");
-            //   Execute.execute(sim,a);
-            //lpm++;
             a = sim.getEffector().setSetMirrorChanges(iteration + 1, (MirrorChange) a);
         } else {
             mirrors++;
@@ -883,8 +1060,6 @@ public class LoopIteration {
 
         if (Analyze.analyzeActiveLinksEquality(b, 35)) {
             Logger.getLogger(ExampleMAPEKOptimizer.class.getName()).info("\t-> add lpm to increase AL%");
-            //   Execute.execute(sim,a);
-            //lpm++;
             b = sim.getEffector().setSetTargetLinksPerMirror(iteration + 1, (TargetLinkChange) b);
         } else {
             lpm--;

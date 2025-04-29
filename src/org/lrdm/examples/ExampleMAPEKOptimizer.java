@@ -12,7 +12,7 @@ import java.util.List;
 
 
 public class ExampleMAPEKOptimizer {
-    private static Integer CURRENT_SITUATION_CODE = 4;
+    private static Integer CURRENT_SITUATION_CODE = 1;
 
     public static void main(String[] args) throws IOException {
 
@@ -51,6 +51,7 @@ public class ExampleMAPEKOptimizer {
             sim.getEffector().setTargetAL(i, listOfIterations.get(i));
             sim.runStepForOptimizer(i, listOfIterations.get(i));
             meanSquaredError = loopIteration.runMAPEKCheckOnIteration(i, sim, CURRENT_SITUATION_CODE);
+//            loopIteration.topologiesTest(sim,i,CURRENT_SITUATION_CODE);
         }
         return meanSquaredError;
     }

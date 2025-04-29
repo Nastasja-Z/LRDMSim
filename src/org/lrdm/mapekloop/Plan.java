@@ -1,12 +1,11 @@
 package org.lrdm.mapekloop;
 
 import org.lrdm.TimedRDMSim;
-import org.lrdm.effectors.Action;
 import org.lrdm.effectors.MirrorChange;
 import org.lrdm.effectors.TargetLinkChange;
+import org.lrdm.effectors.TopologyChange;
+import org.lrdm.topologies.FullyConnectedTopology;
 import org.lrdm.util.IDGenerator;
-
-import java.util.List;
 
 public class Plan {
 
@@ -23,13 +22,13 @@ public class Plan {
     public static MirrorChange mirrorAction(TimedRDMSim sim, int mirrors, int iteration){
        return new MirrorChange(sim.getNetwork(), IDGenerator.getInstance().getNextID(), iteration + 1, mirrors);
 
-        //move it to execute
-        //return sim.getEffector().setMirrors(mirrors, iteration+1);
     }
 
     public static TargetLinkChange linksPerMirrorAction(TimedRDMSim sim, int lpm, int iteration){
         return new TargetLinkChange(sim.getNetwork(), IDGenerator.getInstance().getNextID(), iteration + 1, lpm);
-       // return sim.getEffector().setTargetLinksPerMirror(lpm, iteration+1);
     }
 
+    public static TopologyChange topologyAction(TimedRDMSim sim, int iteration, FullyConnectedTopology topology) {
+        return new TopologyChange(sim.getNetwork(), topology, IDGenerator.getInstance().getNextID(), iteration);
+    }
 }

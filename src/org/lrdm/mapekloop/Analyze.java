@@ -24,8 +24,11 @@ public class Analyze {
     }
 
     public static boolean analyzeActiveLinksComparison(Action a, int goalAL) {
-        //  return a.getNetwork().getActiveLinksHistory().get(a.getNetwork().getCurrentTimeStep()) > goalAL;
         return Math.abs(goalAL - a.getNetwork().getActiveLinksHistory().get(a.getNetwork().getCurrentTimeStep())) <= epsilon;
+    }
+
+    public static boolean analyzeActiveLinksForBTComparison(Action a, int goalAL) {
+        return a.getNetwork().getActiveLinksHistory().get(a.getNetwork().getCurrentTimeStep()) < goalAL;
     }
 
     public static boolean analyzeActiveLinksUnderComparison(Action a, int goalAL) {
